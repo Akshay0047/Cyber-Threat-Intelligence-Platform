@@ -12,6 +12,10 @@ export function errorMessage(error) {
   return error.message || "Request failed";
 }
 
+export function notify(message, tone = "error") {
+  window.dispatchEvent(new CustomEvent("cti-toast", { detail: { message, tone } }));
+}
+
 export async function api(path, { method = "GET", body } = {}) {
   const response = await fetch(path, {
     method,
@@ -28,11 +32,15 @@ export async function api(path, { method = "GET", body } = {}) {
       data = { detail: text };
     }
   }
-  if (response.status === 401 && !path.startsWith("/api/auth/login")) {
-    if (!window.location.pathname.startsWith("/login")) {
+  if (response.status === 401) {
+    const message = data?.detail || "Unauthorized. Sign in again.";
+    if (!path.startsWith("/api/auth/login") && !window.location.pathname.startsWith("/login")) {
+      sessionStorage.setItem("cti-toast", message);
       window.location.assign("/login");
+    } else {
+      notify(message);
     }
-    const error = new Error(data?.detail || "Authentication required");
+    const error = new Error(message);
     error.status = 401;
     error.data = data;
     throw error;
