@@ -7,14 +7,39 @@ const OPTIONS = {
     shape: "dot",
     size: 18,
     borderWidth: 1,
-    font: { size: 13, color: "#f8fafc", strokeWidth: 0 },
+    font: {
+      size: 14,
+      color: "#f8fafc",
+      strokeWidth: 4,
+      strokeColor: "#0f172a",
+      vadjust: 6,
+    },
+    widthConstraint: { maximum: 160 },
   },
   edges: {
     arrows: "to",
-    font: { size: 11, color: "#cbd5e1", strokeWidth: 0, align: "middle" },
+    font: {
+      size: 11,
+      color: "#94a3b8",
+      strokeWidth: 3,
+      strokeColor: "#0f172a",
+      align: "top",
+    },
     color: { color: "#94a3b8", highlight: "#e2e8f0" },
+    smooth: { type: "continuous" },
   },
-  physics: { barnesHut: { gravitationalConstant: -9000, springLength: 140 } },
+  physics: {
+    solver: "barnesHut",
+    barnesHut: {
+      gravitationalConstant: -18000,
+      centralGravity: 0.12,
+      springLength: 240,
+      springConstant: 0.02,
+      damping: 0.35,
+      avoidOverlap: 0.9,
+      nodeDistance: 220,
+    },
+  },
   groups: {
     ThreatActor: { color: { background: "#ef4444", border: "#fecaca" } },
     Malware: { color: { background: "#f97316", border: "#ffedd5" } },
@@ -37,6 +62,9 @@ export function NetworkGraph({ nodes, edges }) {
   useEffect(() => {
     if (!ref.current) return undefined;
     const network = new Network(ref.current, { nodes: nodes || [], edges: edges || [] }, OPTIONS);
+    network.once("stabilizationIterationsDone", () => {
+      network.fit({ animation: false, padding: 80 });
+    });
     return () => network.destroy();
   }, [nodes, edges]);
 

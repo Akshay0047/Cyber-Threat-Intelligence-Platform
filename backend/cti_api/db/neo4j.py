@@ -29,7 +29,22 @@ def _json_safe(value):
     return str(value)
 
 
+def _indicator_label(props):
+    value = str(props.get("value") or "").strip()
+    kind = str(props.get("indicator_type") or "").strip()
+    if kind == "hash" and len(value) > 16:
+        value = f"{value[:12]}…"
+    if kind and value:
+        return f"{kind} {value}"
+    return value or kind
+
+
 def _display(props, labels):
+    label = labels[0] if labels else ""
+    if label == "Infrastructure":
+        text = _indicator_label(props)
+        if text:
+            return text
     for key in (
         "name",
         "value",
@@ -42,7 +57,7 @@ def _display(props, labels):
     ):
         if props.get(key):
             return str(props[key])
-    return labels[0] if labels else "node"
+    return label or "node"
 
 
 def node_to_dict(node):

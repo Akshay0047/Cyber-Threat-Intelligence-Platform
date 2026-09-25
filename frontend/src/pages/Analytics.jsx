@@ -22,6 +22,11 @@ function formatValue(value) {
   return value.toFixed(2);
 }
 
+function capitalize(text) {
+  if (!text) return text;
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
 function Card({ title, rows, error, bars }) {
   const max = Math.max(...rows.map((row) => row.value), 0.01);
   return (
@@ -33,12 +38,12 @@ function Card({ title, rows, error, bars }) {
         {rows.map((row) => (
           <div key={row.label}>
             <div className="mb-1 flex items-baseline justify-between gap-3 text-sm">
-              <span className="truncate text-slate-300" title={row.label}>{row.label}</span>
+              <span className="truncate text-slate-300" title={capitalize(row.label)}>{capitalize(row.label)}</span>
               <span className="font-display text-slate-50">{formatValue(row.value)}</span>
             </div>
             {bars && (
               <div className="h-2 overflow-hidden rounded-full bg-slate-800">
-                <div className={`h-full rounded-full ${BAR_COLOR[row.label] || "bg-cyan-400"}`} style={{ width: `${(row.value / max) * 100}%` }} />
+                <div className={`h-full rounded-full ${BAR_COLOR[row.label.toLowerCase()] || "bg-cyan-400"}`} style={{ width: `${(row.value / max) * 100}%` }} />
               </div>
             )}
           </div>

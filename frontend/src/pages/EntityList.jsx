@@ -84,7 +84,17 @@ const COLLECTIONS = [
 
 function businessId(node) {
   const props = node?.properties || {};
-  return props.actor_id || props.malware_id || props.indicator_id || props.cve_id || props.campaign_id || props.org_id || "";
+  return (
+    props.value ||
+    props.name ||
+    props.actor_id ||
+    props.malware_id ||
+    props.cve_id ||
+    props.campaign_id ||
+    props.org_id ||
+    props.indicator_id ||
+    ""
+  );
 }
 
 function emptyForm(collection) {

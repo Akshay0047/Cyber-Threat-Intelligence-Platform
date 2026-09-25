@@ -138,8 +138,8 @@ export default function Search() {
                   }`}
                 >
                   <span>
-                    <span className="block font-display text-sm text-slate-100">{id}</span>
-                    <span className="font-mono text-xs text-cyan-200">{node.properties.value}</span>
+                    <span className="block font-mono text-sm text-cyan-100">{node.properties.value}</span>
+                    <span className="text-xs text-slate-500">{node.properties.indicator_type}</span>
                   </span>
                   <Badge className="bg-blue-500/15 text-blue-200 ring-blue-400/40">{node.properties.indicator_type}</Badge>
                 </button>
