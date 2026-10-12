@@ -116,7 +116,7 @@ export default function Search() {
       </form>
       {error && <p className="mt-3 rounded-md border border-red-500/40 bg-red-950/70 px-3 py-2 text-sm text-red-200">{error}</p>}
       {result && (
-        <div className="mt-5 grid items-start gap-5 xl:grid-cols-2">
+        <div className="mt-5 grid min-w-0 items-start gap-5 min-[1400px]:grid-cols-2">
           <div className="space-y-3">
             <h2 className="text-sm uppercase tracking-widest text-slate-400">Incidents ({result.incidents.length})</h2>
             {result.incidents.length === 0 && <p className="text-sm text-slate-500">No incident documents.</p>}

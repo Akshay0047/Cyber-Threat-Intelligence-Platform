@@ -125,7 +125,7 @@ export default function GraphView() {
     <section>
       <h1 className="font-display text-2xl text-slate-50">Graph queries</h1>
       <p className="mt-1 text-sm text-slate-400">Run a relationship query and draw the matching nodes and paths.</p>
-      <div className="mt-5 grid items-start gap-5 xl:grid-cols-2">
+      <div className="mt-5 grid items-start gap-5 min-[1400px]:grid-cols-2">
         <div className="space-y-4 rounded-xl border border-slate-800 bg-slate-950/60 p-4">
           <div className="grid gap-3 sm:grid-cols-3">
             {["actor_id", "malware_id", "org_id"].map((name) => (

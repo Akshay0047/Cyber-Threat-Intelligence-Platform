@@ -8,12 +8,12 @@ def api_exception_handler(exc, context):
 
     if isinstance(exc, (ServiceUnavailable, AuthError)):
         return Response(
-            {"detail": "Neo4j is unavailable. Check NEO4J_URI and credentials."},
+            {"detail": "The relationship graph is unavailable. Start it and try again."},
             status=503,
         )
     if isinstance(exc, PyMongoError):
         return Response(
-            {"detail": "MongoDB is unavailable. Check MONGO_URI."},
+            {"detail": "Stored records are unavailable. Start the document store and try again."},
             status=503,
         )
     return exception_handler(exc, context)

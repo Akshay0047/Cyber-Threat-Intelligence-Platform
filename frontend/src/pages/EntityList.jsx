@@ -69,6 +69,42 @@ const COLLECTIONS = [
     ],
   },
   {
+    key: "graph-actors",
+    label: "Graph actors",
+    path: "/api/graph/actors/",
+    idField: "actor_id",
+    graph: true,
+    fields: [
+      { name: "actor_id", label: "Actor ID" },
+      { name: "name", label: "Name" },
+      { name: "origin", label: "Origin" },
+    ],
+  },
+  {
+    key: "graph-malware",
+    label: "Graph malware",
+    path: "/api/graph/malware/",
+    idField: "malware_id",
+    graph: true,
+    fields: [
+      { name: "malware_id", label: "Malware ID" },
+      { name: "name", label: "Name" },
+      { name: "type", label: "Type", type: "select", options: ["loader", "ransomware", "backdoor", "stealer", "rat", "trojan"] },
+    ],
+  },
+  {
+    key: "graph-infra",
+    label: "Graph infrastructure",
+    path: "/api/graph/infra/",
+    idField: "indicator_id",
+    graph: true,
+    fields: [
+      { name: "indicator_id", label: "Indicator ID" },
+      { name: "value", label: "Value" },
+      { name: "indicator_type", label: "Type", type: "select", options: ["ip", "domain", "hash"] },
+    ],
+  },
+  {
     key: "relationships",
     label: "Relationships",
     path: "/api/graph/relationships/",
@@ -142,6 +178,10 @@ export default function EntityList() {
 
   async function load(next = collection) {
     const data = await api(next.path);
+    if (next.graph) {
+      setRows(data.map((node) => node.properties || node));
+      return;
+    }
     if (next.key === "relationships") {
       setRows(
         data.map((rel) => ({
@@ -220,7 +260,7 @@ export default function EntityList() {
 
   return (
     <section>
-      <div className="flex flex-wrap items-end justify-between gap-3">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <h1 className="font-display text-2xl text-slate-50">Entities</h1>
           <p className="mt-1 text-sm text-slate-400">Create, review, and delete records. Relationships cannot be updated.</p>

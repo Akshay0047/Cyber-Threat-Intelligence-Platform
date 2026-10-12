@@ -40,8 +40,8 @@ function Shell() {
   if (!user?.user_id) return <Navigate to="/login" replace />;
 
   return (
-    <div className="min-h-screen bg-slate-900 lg:grid lg:grid-cols-[240px_1fr]">
-      <aside className="sticky top-0 z-40 border-b border-cyan-400/30 bg-slate-950/70 backdrop-blur-xl lg:h-screen lg:border-b-0 lg:border-r">
+    <div className="flex h-screen flex-col overflow-hidden bg-slate-900 lg:grid lg:grid-cols-[240px_minmax(0,1fr)]">
+      <aside className="z-30 shrink-0 border-b border-cyan-400/30 bg-slate-950/90 backdrop-blur-xl lg:h-screen lg:overflow-y-auto lg:border-b-0 lg:border-r">
         <div className="flex items-center justify-between gap-4 px-5 py-4 lg:block">
           <div>
             <p className="font-display text-[10px] uppercase tracking-[0.28em] text-cyan-400">CTI</p>
@@ -53,13 +53,13 @@ function Shell() {
             {user.role}
           </p>
         </div>
-        <nav className="flex gap-2 overflow-x-auto px-3 pb-3 lg:mt-4 lg:flex-col lg:px-3">
+        <nav className="flex gap-2 overflow-x-auto px-3 pb-3 lg:mt-4 lg:flex-col lg:overflow-visible lg:px-3">
           {LINKS.map((link) => (
             <NavLink
               key={link.to}
               to={link.to}
               className={({ isActive }) =>
-                `rounded-md border px-3 py-2 text-sm font-semibold tracking-wide transition ${
+                `shrink-0 rounded-md border px-3 py-2 text-sm font-semibold tracking-wide transition ${
                   isActive
                     ? "border-cyan-400 bg-cyan-400/10 text-cyan-200 shadow-glow"
                     : "border-transparent text-slate-400 hover:border-slate-700 hover:text-slate-100"
@@ -72,13 +72,13 @@ function Shell() {
           <button
             type="button"
             onClick={logout}
-            className="rounded-md border border-transparent px-3 py-2 text-left text-sm font-semibold text-slate-400 hover:border-emerald-400/40 hover:text-emerald-300 lg:mt-auto"
+            className="shrink-0 rounded-md border border-transparent px-3 py-2 text-left text-sm font-semibold text-slate-400 hover:border-emerald-400/40 hover:text-emerald-300"
           >
             Logout
           </button>
         </nav>
       </aside>
-      <main className="min-w-0 px-4 py-6 sm:px-6 lg:px-8">
+      <main className="min-h-0 min-w-0 flex-1 overflow-y-auto px-4 py-6 sm:px-6 lg:px-8">
         <Outlet />
       </main>
     </div>
