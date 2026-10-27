@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { api, errorMessage } from "../api";
+import { incidentIndicatorLabel, infrastructureDetail, infrastructureTitle } from "../indicatorDisplay";
 import { NetworkGraph } from "./GraphView";
 
 const SEVERITY = {
@@ -46,7 +47,7 @@ function IncidentCard({ incident }) {
         <div className="mt-1 flex flex-wrap gap-1.5">
           {(incident.related_indicators || []).map((indicator) => (
             <Badge key={indicator} className="bg-cyan-400/10 font-mono normal-case tracking-normal text-cyan-200 ring-cyan-400/40">
-              {indicator}
+              {incidentIndicatorLabel(indicator)}
             </Badge>
           ))}
         </div>
@@ -173,8 +174,8 @@ export default function Search() {
                   }`}
                 >
                   <span>
-                    <span className="block font-mono text-sm text-cyan-100">{node.properties.value}</span>
-                    <span className="text-xs text-slate-500">{node.properties.indicator_type}</span>
+                    <span className="block font-mono text-sm font-semibold text-cyan-100">{infrastructureTitle(node.properties)}</span>
+                    <span className="text-xs text-slate-500">{infrastructureDetail(node.properties)}</span>
                   </span>
                   <Badge className="bg-blue-500/15 text-blue-200 ring-blue-400/40">{node.properties.indicator_type}</Badge>
                 </button>

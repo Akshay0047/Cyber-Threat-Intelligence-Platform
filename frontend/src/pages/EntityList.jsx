@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { api, errorMessage } from "../api";
+import { formatIndicatorValue, linkNodeLabel } from "../indicatorDisplay";
 
 const COLLECTIONS = [
   {
@@ -101,8 +102,8 @@ const COLLECTIONS = [
     graph: true,
     fields: [
       { name: "indicator_id", label: "Indicator ID" },
-      { name: "value", label: "Value" },
       { name: "indicator_type", label: "Type", type: "select", options: ["ip", "domain", "hash"] },
+      { name: "value", label: "Value" },
     ],
   },
   {
@@ -121,15 +122,17 @@ const COLLECTIONS = [
 
 function businessId(node) {
   const props = node?.properties || {};
+  if (props.indicator_id) {
+    return linkNodeLabel(node);
+  }
   return (
-    props.value ||
     props.name ||
     props.actor_id ||
     props.malware_id ||
     props.cve_id ||
     props.campaign_id ||
     props.org_id ||
-    props.indicator_id ||
+    props.value ||
     ""
   );
 }
@@ -161,7 +164,10 @@ function toPayload(collection, form) {
   return payload;
 }
 
-function cell(value) {
+function cell(value, field, row) {
+  if (field?.name === "value" && row?.indicator_type) {
+    return formatIndicatorValue(value, row.indicator_type);
+  }
   if (Array.isArray(value)) return value.join(", ");
   if (value == null) return "";
   const text = String(value);
@@ -308,7 +314,7 @@ export default function EntityList() {
               <tr key={row[collection.idField]} className="border-t border-slate-800 transition hover:bg-slate-800/80">
                 {collection.fields.map((field) => (
                   <td key={field.name} className="max-w-[220px] px-3 py-2.5 text-slate-200" title={String(row[field.name] ?? "")}>
-                    {cell(row[field.name])}
+                    {cell(row[field.name], field, row)}
                   </td>
                 ))}
                 <td className="whitespace-nowrap px-3 py-2.5 text-right">

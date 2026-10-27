@@ -30,8 +30,15 @@ def _json_safe(value):
 
 
 def _indicator_label(props):
+    indicator_id = str(props.get("indicator_id") or "").strip()
     value = str(props.get("value") or "").strip()
     kind = str(props.get("indicator_type") or "").strip()
+    if indicator_id:
+        if kind == "hash" and len(value) > 16:
+            value = f"{value[:12]}…"
+        if kind and value:
+            return f"{indicator_id} · {kind} {value}"
+        return indicator_id
     if kind == "hash" and len(value) > 16:
         value = f"{value[:12]}…"
     if kind and value:
