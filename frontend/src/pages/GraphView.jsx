@@ -102,11 +102,59 @@ const QUERIES = [
 const inputClass =
   "mt-1 w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-slate-100 shadow-inset outline-none focus:border-cyan-400";
 
+const PICKS = [
+  { key: "actor_id", label: "Threat actor" },
+  { key: "malware_id", label: "Malware" },
+  { key: "org_id", label: "Target organization" },
+];
+
+function optionLabel(item) {
+  if (!item) return "";
+  return item.name ? `${item.name} (${item.id})` : item.id;
+}
+
 export default function GraphView() {
   const [form, setForm] = useState({ actor_id: "TA-01", malware_id: "MW-01", org_id: "ORG-15" });
+  const [choices, setChoices] = useState({ actor_id: [], malware_id: [], org_id: [] });
   const [graph, setGraph] = useState({ nodes: [], edges: [] });
   const [summary, setSummary] = useState("Choose a query to draw the neighborhood.");
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    async function loadChoices() {
+      const [actors, malware, organizations] = await Promise.all([
+        api("/api/graph/actors/"),
+        api("/api/graph/malware/"),
+        api("/api/organizations/"),
+      ]);
+      if (!active) return;
+      const asOptions = (rows, idKey, fromNode) =>
+        rows
+          .map((row) => {
+            const props = fromNode ? row.properties || row : row;
+            return { id: props[idKey], name: props.name || "" };
+          })
+          .filter((item) => item.id)
+          .sort((a, b) => a.id.localeCompare(b.id));
+      setChoices({
+        actor_id: asOptions(actors, "actor_id", true),
+        malware_id: asOptions(malware, "malware_id", true),
+        org_id: asOptions(organizations, "org_id", false),
+      });
+    }
+    loadChoices().catch((err) => {
+      if (active) setError(errorMessage(err));
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  function named(key) {
+    const match = choices[key].find((item) => item.id === form[key]);
+    return optionLabel(match) || form[key];
+  }
 
   async function run(query) {
     setError("");
@@ -115,7 +163,12 @@ export default function GraphView() {
       setGraph(data.graph || { nodes: [], edges: [] });
       const count = data.graph?.nodes?.length || 0;
       const length = data.path?.length;
-      setSummary(length == null ? `${query.label}: ${count} node${count === 1 ? "" : "s"}` : `${query.label}: ${length} hop${length === 1 ? "" : "s"}`);
+      const who = `${named("actor_id")} · ${named("malware_id")} · ${named("org_id")}`;
+      setSummary(
+        length == null
+          ? `${query.label}: ${count} node${count === 1 ? "" : "s"}. ${who}`
+          : `${query.label}: ${length} hop${length === 1 ? "" : "s"} from ${named("actor_id")} to ${named("org_id")}`
+      );
     } catch (err) {
       setError(errorMessage(err));
     }
@@ -124,14 +177,27 @@ export default function GraphView() {
   return (
     <section>
       <h1 className="font-display text-2xl text-slate-50">Graph queries</h1>
-      <p className="mt-1 text-sm text-slate-400">Run a relationship query and draw the matching nodes and paths.</p>
+      <p className="mt-1 text-sm text-slate-400">
+        Pick a group, a malware sample, or a company by name. The short code in parentheses is the id used in the records, so TA-01 is Salted Spider.
+      </p>
       <div className="mt-5 grid items-start gap-5 min-[1400px]:grid-cols-2">
         <div className="space-y-4 rounded-xl border border-slate-800 bg-slate-950/60 p-4">
           <div className="grid gap-3 sm:grid-cols-3">
-            {["actor_id", "malware_id", "org_id"].map((name) => (
-              <label key={name} className="text-xs uppercase tracking-wide text-slate-400">
-                {name.replace("_", " ")}
-                <input className={inputClass} value={form[name]} onChange={(event) => setForm({ ...form, [name]: event.target.value })} />
+            {PICKS.map((pick) => (
+              <label key={pick.key} className="text-xs uppercase tracking-wide text-slate-400">
+                {pick.label}
+                <select
+                  className={inputClass}
+                  value={form[pick.key]}
+                  onChange={(event) => setForm({ ...form, [pick.key]: event.target.value })}
+                >
+                  {choices[pick.key].length === 0 && <option value={form[pick.key]}>{form[pick.key]}</option>}
+                  {choices[pick.key].map((item) => (
+                    <option key={item.id} value={item.id}>
+                      {optionLabel(item)}
+                    </option>
+                  ))}
+                </select>
               </label>
             ))}
           </div>

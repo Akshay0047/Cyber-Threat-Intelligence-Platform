@@ -23,8 +23,8 @@ const COLLECTIONS = [
     path: "/api/malware/",
     idField: "malware_id",
     fields: [
-      { name: "malware_id", label: "Malware ID" },
       { name: "name", label: "Name" },
+      { name: "malware_id", label: "Malware ID" },
       { name: "family", label: "Family" },
       { name: "hash", label: "Hash" },
       { name: "behavior_summary", label: "Behavior summary", type: "textarea" },
@@ -37,6 +37,7 @@ const COLLECTIONS = [
     path: "/api/actor-profiles/",
     idField: "actor_id",
     fields: [
+      { name: "display_name", label: "Name", tableOnly: true },
       { name: "actor_id", label: "Actor ID" },
       { name: "aliases", label: "Aliases", type: "csv" },
       { name: "motivation", label: "Motivation", type: "select", options: ["financial", "espionage", "disruption", "hacktivism"] },
@@ -62,8 +63,8 @@ const COLLECTIONS = [
     path: "/api/organizations/",
     idField: "org_id",
     fields: [
-      { name: "org_id", label: "Organization ID" },
       { name: "name", label: "Name" },
+      { name: "org_id", label: "Organization ID" },
       { name: "sector", label: "Sector", type: "select", options: ["finance", "healthcare", "energy", "government", "telecommunications", "manufacturing", "education"] },
       { name: "country", label: "Country" },
     ],
@@ -75,8 +76,8 @@ const COLLECTIONS = [
     idField: "actor_id",
     graph: true,
     fields: [
-      { name: "actor_id", label: "Actor ID" },
       { name: "name", label: "Name" },
+      { name: "actor_id", label: "Actor ID" },
       { name: "origin", label: "Origin" },
     ],
   },
@@ -87,8 +88,8 @@ const COLLECTIONS = [
     idField: "malware_id",
     graph: true,
     fields: [
-      { name: "malware_id", label: "Malware ID" },
       { name: "name", label: "Name" },
+      { name: "malware_id", label: "Malware ID" },
       { name: "type", label: "Type", type: "select", options: ["loader", "ransomware", "backdoor", "stealer", "rat", "trojan"] },
     ],
   },
@@ -133,8 +134,12 @@ function businessId(node) {
   );
 }
 
+function formFields(collection) {
+  return collection.fields.filter((field) => !field.tableOnly);
+}
+
 function emptyForm(collection) {
-  return Object.fromEntries(collection.fields.map((field) => [field.name, ""]));
+  return Object.fromEntries(formFields(collection).map((field) => [field.name, ""]));
 }
 
 function toInput(field, value) {
@@ -146,7 +151,7 @@ function toInput(field, value) {
 
 function toPayload(collection, form) {
   const payload = {};
-  collection.fields.forEach((field) => {
+  formFields(collection).forEach((field) => {
     const raw = form[field.name] ?? "";
     if (field.type === "csv") payload[field.name] = raw.split(",").map((part) => part.trim()).filter(Boolean);
     else if (field.type === "number") payload[field.name] = Number(raw);
@@ -193,6 +198,15 @@ export default function EntityList() {
       );
       return;
     }
+    if (next.key === "actors") {
+      setRows(
+        data.map((row) => ({
+          ...row,
+          display_name: Array.isArray(row.aliases) && row.aliases.length ? row.aliases[0] : "",
+        }))
+      );
+      return;
+    }
     setRows(data);
   }
 
@@ -207,7 +221,7 @@ export default function EntityList() {
   function editRow(row) {
     if (collection.immutable) return;
     const next = {};
-    collection.fields.forEach((field) => {
+    formFields(collection).forEach((field) => {
       next[field.name] = toInput(field, row[field.name]);
     });
     setForm(next);
@@ -263,7 +277,9 @@ export default function EntityList() {
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <h1 className="font-display text-2xl text-slate-50">Entities</h1>
-          <p className="mt-1 text-sm text-slate-400">Create, review, and delete records. Relationships cannot be updated.</p>
+          <p className="mt-1 text-sm text-slate-400">
+            Create, review, and delete records. Relationships cannot be updated. A short code such as TA-01 is the same record as its name: TA-01 is Salted Spider.
+          </p>
         </div>
         <div className="flex gap-2">
           <select value={key} onChange={(event) => setKey(event.target.value)} className="rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-slate-100">
@@ -316,7 +332,7 @@ export default function EntityList() {
         <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/70 p-4 backdrop-blur-sm" onClick={() => setOpen(false)}>
           <form className="max-h-[90vh] w-full max-w-lg space-y-3 overflow-auto rounded-2xl border border-cyan-400/30 bg-slate-900 p-5 shadow-glow" onClick={(event) => event.stopPropagation()} onSubmit={onSubmit}>
             <h2 className="font-display text-lg text-slate-50">{editing && !collection.immutable ? "Edit record" : "Create record"}</h2>
-            {collection.fields.map((field) => (
+            {formFields(collection).map((field) => (
               <label key={field.name} className="block text-sm text-slate-300">
                 {field.label}
                 {field.type === "textarea" ? (

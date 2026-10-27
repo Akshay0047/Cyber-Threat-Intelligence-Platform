@@ -19,6 +19,12 @@ function display(value) {
   return String(value);
 }
 
+const SUGGESTIONS = [
+  { term: "INF-01", hint: "First infrastructure record — good demo for incidents and the neighborhood graph" },
+  { term: "INF-11", hint: "Domain-type indicator" },
+  { term: "INF-21", hint: "Hash-type indicator" },
+];
+
 function IncidentCard({ incident }) {
   const fields = [
     ["Source", incident.source],
@@ -75,12 +81,14 @@ export default function Search() {
     setSelected(id);
   }
 
-  async function onSubmit(event) {
-    event.preventDefault();
+  async function runSearch(term) {
+    const trimmed = term.trim();
+    if (!trimmed) return;
+    setQuery(trimmed);
     setBusy(true);
     setError("");
     try {
-      const data = await api(`/api/search/?q=${encodeURIComponent(query.trim())}`);
+      const data = await api(`/api/search/?q=${encodeURIComponent(trimmed)}`);
       setResult(data);
       const first = data.infrastructure[0];
       const id = first?.properties?.indicator_id || first?.properties?.value || "";
@@ -94,6 +102,11 @@ export default function Search() {
     }
   }
 
+  async function onSubmit(event) {
+    event.preventDefault();
+    await runSearch(query);
+  }
+
   useEffect(() => {
     setSelected("");
   }, [query]);
@@ -101,7 +114,9 @@ export default function Search() {
   return (
     <section>
       <h1 className="font-display text-2xl text-slate-50">Indicator search</h1>
-      <p className="mt-1 text-sm text-slate-400">Look up an indicator across incident reports and linked infrastructure.</p>
+      <p className="mt-1 text-sm text-slate-400">
+        Look up an IP, domain, file hash, or indicator code such as INF-01. Pick a suggestion below to run a sample search.
+      </p>
       <form className="mt-4 flex flex-wrap gap-2" onSubmit={onSubmit}>
         <input
           value={query}
@@ -114,7 +129,27 @@ export default function Search() {
           {busy ? "Searching..." : "Search"}
         </button>
       </form>
+      <div className="mt-4 rounded-xl border border-slate-800 bg-slate-950/50 p-4">
+        <p className="text-xs font-semibold uppercase tracking-widest text-slate-500">Try a sample search</p>
+        <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+          {SUGGESTIONS.map((item) => (
+            <button
+              key={item.term}
+              type="button"
+              disabled={busy}
+              onClick={() => runSearch(item.term)}
+              className="rounded-lg border border-cyan-400/30 bg-slate-900/80 px-4 py-3 text-left transition hover:border-cyan-400/60 hover:bg-cyan-400/5 disabled:opacity-60"
+            >
+              <span className="font-mono text-sm font-semibold text-cyan-200">{item.term}</span>
+              <span className="mt-1 block text-xs text-slate-400">{item.hint}</span>
+            </button>
+          ))}
+        </div>
+      </div>
       {error && <p className="mt-3 rounded-md border border-red-500/40 bg-red-950/70 px-3 py-2 text-sm text-red-200">{error}</p>}
+      {!result && !busy && !error && (
+        <p className="mt-6 text-center text-sm text-slate-500">No results yet. Click a suggestion above or type an indicator and press Search.</p>
+      )}
       {result && (
         <div className="mt-5 grid min-w-0 items-start gap-5 min-[1400px]:grid-cols-2">
           <div className="space-y-3">
